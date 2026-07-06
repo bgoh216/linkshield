@@ -5,21 +5,22 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "next start"
   },
   "dependencies": {
-    "next": "14.2.35",
-    "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "@govtechsg/sgds-web-component": "^3.23.0",
+    "@tailwindcss/postcss": "^4.3.2",
+    "next": "16.2.10",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
   },
   "devDependencies": {
     "@types/node": "20.14.15",
-    "@types/react": "18.3.3",
-    "@types/react-dom": "18.3.0",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
     "autoprefixer": "10.4.19",
-    "postcss": "8.4.40",
-    "tailwindcss": "3.4.7",
+    "postcss": "^8.5.16",
+    "tailwindcss": "^4.3.2",
     "typescript": "5.5.4"
   }
 }
