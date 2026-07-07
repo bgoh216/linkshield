@@ -28,6 +28,14 @@ linkshield/
   docker-compose.yml   Postgres for local dev
 ```
 
+## Database
+![erd](image.png)
+
+Two tables, one-to-many (`links` 1 — * `clicks`):
+
+- **links** — `id`, `short_code` (unique, indexed), `long_url`, `created_at`, plus moderation/safety state: `is_flagged`, `is_verified_safe`, `last_checked_at` (used by the click-time re-validation described below).
+- **clicks** — `id`, `link_id` (FK), `clicked_at`, `ip_address`, `user_agent`, `referrer`, and `device_metadata` (JSON) for the enriched click-tracking data (screen size, timezone, language, etc. — see the enriched click tracking section below for why this is a schema-less JSON blob rather than fixed columns).
+
 ## How the plug-and-play architecture works
 
 Routes never call `SSRFCheck()` or `DBClickTracker()` directly. Instead they
@@ -58,6 +66,8 @@ environment.
 ```bash
 docker compose up -d
 ```
+
+
 
 **2. Backend**
 ```bash
