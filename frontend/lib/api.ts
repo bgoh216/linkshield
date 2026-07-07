@@ -11,6 +11,8 @@ export interface LinkResponse {
 }
 
 export async function createLink(longUrl: string, customCode?: string): Promise<LinkResponse> {
+
+  console.log(`Creating link for long URL: ${longUrl} with custom code: ${customCode}`);
   const res = await fetch(`${API_BASE}/api/links`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

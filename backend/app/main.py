@@ -44,6 +44,8 @@ async def create_link(
 ):
     long_url = str(payload.long_url)
 
+    print(f"Received request to shorten URL: {long_url}")
+
     # Run every active security check (SSRF guard, reputation API, whatever
     # else gets registered later) via the injected pipeline.
     result = await pipeline.run(long_url)

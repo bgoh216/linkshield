@@ -1,10 +1,17 @@
 from datetime import datetime
-from pydantic import BaseModel, HttpUrl, ConfigDict
+from pydantic import BaseModel, HttpUrl, ConfigDict, field_validator
 
 
 class LinkCreateRequest(BaseModel):
     long_url: HttpUrl
     custom_code: str | None = None  # optional custom alias
+
+    @field_validator("long_url", mode="before")
+    @classmethod
+    def reject_blank_url(cls, v):
+        if isinstance(v, str) and not v.strip():
+            raise ValueError("long_url must not be empty")
+        return v
 
 
 class LinkResponse(BaseModel):

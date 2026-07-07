@@ -65,9 +65,14 @@ export default function HomePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    const trimmedUrl = longUrl.trim();
+    if (!trimmedUrl) {
+      setError("Please enter a URL to shorten");
+      return;
+    }
     setLoading(true);
     try {
-      const created = await createLink(longUrl, customCode || undefined);
+      const created = await createLink(trimmedUrl, customCode || undefined);
       setLongUrl("");
       setCustomCode("");
       await refresh();
