@@ -13,7 +13,7 @@ import {
   SgdsInput,
   SgdsLink,
 } from "@govtechsg/sgds-web-component/react";
-import { createLink, listLinks, shortUrlFor, LinkResponse } from "@/lib/api";
+import { createLink, listLinks, shortUrlFor, LinkResponse, deleteLink } from "@/lib/api";
 
 function renderStatusBadge(link: LinkResponse) {
   if (link.is_flagged) {
@@ -84,6 +84,18 @@ export default function HomePage() {
     setCopiedId(id);
     setTimeout(() => setCopiedId((current) => (current === id ? null : current)), 1500);
   }
+
+  async function handleDelete(shortCode: string) {
+    if (window.confirm("Are you sure you want to delete this link?")) {
+      try {
+        await deleteLink(shortCode);
+        await refresh();
+      } catch (err: any) {
+        setError(err.message ?? "Something went wrong");
+      }
+    }
+  }
+
 
   return (
     <main className="min-h-screen" style={{ background: "var(--sgds-bg-alternate)" }}>
@@ -342,82 +354,91 @@ export default function HomePage() {
             </p>
           </div>
         ) : (
-            <div
-              className="flex flex-col"
-              style={{
-                border: "1px solid var(--sgds-border-color-default)",
-                borderRadius: "var(--sgds-border-radius-lg)",
-                background: "var(--sgds-surface-default)",
-                maxHeight: "28rem",
-                overflowY: "auto",
-              }}
-            >
-              {links.map((link, index) => {
-                const url = shortUrlFor(link.short_code);
-                return (
-                  <div
-                    key={link.id}
-                    className="flex flex-col gap-2"
-                    style={{
-                      padding: "var(--sgds-padding-lg)",
-                      borderTop:
-                        index === 0 ? "none" : "1px solid var(--sgds-border-color-default)",
-                    }}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <SgdsLink size="sm">
-                        <a
-                          href={url}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{
-                            display: "inline-block",
-                            maxWidth: "100%",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {url.replace(/^https?:\/\//, "")}
-                        </a>
-                      </SgdsLink>
+          <div
+            className="flex flex-col"
+            style={{
+              border: "1px solid var(--sgds-border-color-default)",
+              borderRadius: "var(--sgds-border-radius-lg)",
+              background: "var(--sgds-surface-default)",
+              maxHeight: "28rem",
+              overflowY: "auto",
+            }}
+          >
+            {links.map((link, index) => {
+              const url = shortUrlFor(link.short_code);
+              return (
+                <div
+                  key={link.id}
+                  className="flex flex-col gap-2"
+                  style={{
+                    padding: "var(--sgds-padding-lg)",
+                    borderTop:
+                      index === 0 ? "none" : "1px solid var(--sgds-border-color-default)",
+                  }}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <SgdsLink size="sm">
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          display: "inline-block",
+                          maxWidth: "100%",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {url.replace(/^https?:\/\//, "")}
+                      </a>
+                    </SgdsLink>
+                    <div className="flex items-center gap-1" style={{ flexShrink: 0 }}>
                       <SgdsIconButton
                         size="sm"
-                        style={{ flexShrink: 0 }}
                         name={copiedId === link.id ? "check" : "copy"}
                         ariaLabel="Copy short link"
                         onClick={() => handleCopy(link.id, url)}
                       />
-                    </div>
-                    <span
-                      title={link.long_url}
-                      style={{
-                        display: "block",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        fontSize: "var(--sgds-font-size-body-sm)",
-                        color: "var(--sgds-color-subtle)",
-                      }}
-                    >
-                      {link.long_url}
-                    </span>
-                    <div className="flex items-center justify-between gap-2">
-                      <span
-                        style={{
-                          fontSize: "var(--sgds-font-size-body-sm)",
-                          color: "var(--sgds-color-subtle)",
-                          fontVariantNumeric: "tabular-nums",
-                        }}
-                      >
-                        {link.click_count.toLocaleString()} clicks
-                      </span>
-                      {renderStatusBadge(link)}
+                      <SgdsIconButton
+                        size="sm"
+                        variant="ghost"
+                        tone="danger"
+                        name="trash"
+                        ariaLabel="Delete link"
+                        onClick={() => handleDelete(link.short_code)}
+                      />
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                  <span
+                    title={link.long_url}
+                    style={{
+                      display: "block",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      fontSize: "var(--sgds-font-size-body-sm)",
+                      color: "var(--sgds-color-subtle)",
+                    }}
+                  >
+                    {link.long_url}
+                  </span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span
+                      style={{
+                        fontSize: "var(--sgds-font-size-body-sm)",
+                        color: "var(--sgds-color-subtle)",
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {link.click_count.toLocaleString()} clicks
+                    </span>
+                    {renderStatusBadge(link)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </main>

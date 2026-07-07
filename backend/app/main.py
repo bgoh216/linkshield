@@ -192,3 +192,12 @@ async def record_enriched_click(
         )
 
     return schemas.ClickRedirectResponse(redirect_url=link.long_url)
+
+
+@app.delete("/api/links/{short_code}", status_code=204)
+def delete_link(short_code: str, db: Session = Depends(get_db)):
+    link = db.query(models.Link).filter(models.Link.short_code == short_code).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="Link not found")
+    db.delete(link)
+    db.commit()

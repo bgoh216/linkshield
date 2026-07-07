@@ -31,6 +31,19 @@ export async function listLinks(): Promise<LinkResponse[]> {
   return res.json();
 }
 
+export async function deleteLink(shortCode: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/links/${shortCode}`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Request failed" }));
+    throw new Error(err.detail ?? "Failed to delete link");
+  }
+
+  return;
+}
+
 export function shortUrlFor(shortCode: string): string {
   // Points at our own /go/[code] page (interstitial for real browsers,
   // instant server-side redirect for bots) — not the raw backend /r/{code}.

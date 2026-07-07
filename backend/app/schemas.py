@@ -24,7 +24,7 @@ class LinkStatsResponse(BaseModel):
     long_url: str
     total_clicks: int
     created_at: datetime
-
+    
 
 class ClickMetadata(BaseModel):
     """Client-side enrichment data collected by the frontend interstitial page."""
