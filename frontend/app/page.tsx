@@ -12,10 +12,6 @@ import {
   SgdsIconButton,
   SgdsInput,
   SgdsLink,
-  SgdsTable,
-  SgdsTableCell,
-  SgdsTableHead,
-  SgdsTableRow,
 } from "@govtechsg/sgds-web-component/react";
 import { createLink, listLinks, shortUrlFor, LinkResponse } from "@/lib/api";
 
@@ -245,6 +241,7 @@ export default function HomePage() {
                       </a>
                     </SgdsLink>
                     <SgdsIconButton
+                      size="sm"
                       style={{ flexShrink: 0 }}
                       name={copiedId === newLink.id ? "check" : "copy"}
                       ariaLabel="Copy short link"
@@ -345,80 +342,14 @@ export default function HomePage() {
             </p>
           </div>
         ) : (
-          <>
-            {/* Table layout — comfortable columns from md breakpoint up */}
-            <SgdsTable
-              tableBorder
-              layout="fixed"
-              className="hidden md:block"
-              style={{ tableLayout: "fixed", width: "100%" }}
-            >
-              <SgdsTableRow>
-                <SgdsTableHead style={{ width: "34%" }}>Short link</SgdsTableHead>
-                <SgdsTableHead style={{ width: "34%" }}>Destination</SgdsTableHead>
-                <SgdsTableHead style={{ width: "12%", textAlign: "right" }}>Clicks</SgdsTableHead>
-                <SgdsTableHead style={{ width: "20%" }}>Status</SgdsTableHead>
-              </SgdsTableRow>
-              {links.map((link) => {
-                const url = shortUrlFor(link.short_code);
-                return (
-                  <SgdsTableRow key={link.id}>
-                    <SgdsTableCell>
-                      <div className="flex min-w-0 items-center gap-2">
-                        <SgdsLink size="sm">
-                          <a
-                            href={url}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                              display: "inline-block",
-                              maxWidth: "100%",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              verticalAlign: "bottom",
-                            }}
-                          >
-                            {url.replace(/^https?:\/\//, "")}
-                          </a>
-                        </SgdsLink>
-                        <SgdsIconButton
-                          name={copiedId === link.id ? "check" : "copy"}
-                          ariaLabel="Copy short link"
-                          onClick={() => handleCopy(link.id, url)}
-                        />
-                      </div>
-                    </SgdsTableCell>
-                    <SgdsTableCell>
-                      <span
-                        title={link.long_url}
-                        style={{
-                          display: "block",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          color: "var(--sgds-color-subtle)",
-                        }}
-                      >
-                        {link.long_url}
-                      </span>
-                    </SgdsTableCell>
-                    <SgdsTableCell style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                      {link.click_count.toLocaleString()}
-                    </SgdsTableCell>
-                    <SgdsTableCell>{renderStatusBadge(link)}</SgdsTableCell>
-                  </SgdsTableRow>
-                );
-              })}
-            </SgdsTable>
-
-            {/* Stacked layout — below md, where columns can't fit without crowding */}
             <div
-              className="flex flex-col md:hidden"
+              className="flex flex-col"
               style={{
                 border: "1px solid var(--sgds-border-color-default)",
                 borderRadius: "var(--sgds-border-radius-lg)",
                 background: "var(--sgds-surface-default)",
+                maxHeight: "28rem",
+                overflowY: "auto",
               }}
             >
               {links.map((link, index) => {
@@ -451,6 +382,8 @@ export default function HomePage() {
                         </a>
                       </SgdsLink>
                       <SgdsIconButton
+                        size="sm"
+                        style={{ flexShrink: 0 }}
                         name={copiedId === link.id ? "check" : "copy"}
                         ariaLabel="Copy short link"
                         onClick={() => handleCopy(link.id, url)}
@@ -485,7 +418,6 @@ export default function HomePage() {
                 );
               })}
             </div>
-          </>
         )}
       </div>
     </main>

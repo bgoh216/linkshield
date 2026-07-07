@@ -1,7 +1,24 @@
-**node_modules**
-**dist**
-**venv**
-**__pycache__**
-**.next**
+# Dependencies
+**/node_modules/
+
+# Python
+**/__pycache__/
+*.pyc
+**/venv/
+**/.venv/
+**/*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Frontend build output
+**/.next/
+**/dist/
+*.tsbuildinfo
+
+# Env files
 **/.env
 **/.env.local
+
+# OS/editor cruft
+.DS_Store
+Thumbs.db
