@@ -10,6 +10,16 @@ export interface LinkResponse {
   click_count: number;
 }
 
+// FastAPI's own request-validation errors (422) shape `detail` as an array of
+// {msg, loc, ...} objects rather than a string, unlike our HTTPException(detail=...)
+// calls elsewhere — normalize both into one readable message.
+function extractErrorMessage(err: any, fallback: string): string {
+  if (Array.isArray(err?.detail)) {
+    return err.detail.map((e: any) => e.msg ?? JSON.stringify(e)).join("; ");
+  }
+  return err?.detail ?? fallback;
+}
+
 export async function createLink(longUrl: string, customCode?: string): Promise<LinkResponse> {
 
   console.log(`Creating link for long URL: ${longUrl} with custom code: ${customCode}`);
@@ -21,7 +31,7 @@ export async function createLink(longUrl: string, customCode?: string): Promise<
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: "Request failed" }));
-    throw new Error(err.detail ?? "Failed to create link");
+    throw new Error(extractErrorMessage(err, "Failed to create link"));
   }
 
   return res.json();
@@ -40,7 +50,7 @@ export async function deleteLink(shortCode: string): Promise<void> {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: "Request failed" }));
-    throw new Error(err.detail ?? "Failed to delete link");
+    throw new Error(extractErrorMessage(err, "Failed to delete link"));
   }
 
   return;

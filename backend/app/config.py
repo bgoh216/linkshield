@@ -8,12 +8,14 @@ the shape), add it to SECURITY_CHECK_REGISTRY, add its name to ACTIVE_CHECKS
 
 import os
 
-from .checks import SSRFCheck, ReputationCheck
+from .checks import SSRFCheck, ReputationCheck, WhitelistURLCheck, BlacklistURLCheck
 from .tracking import DBClickTracker, ExternalAnalyticsTracker
 
 SECURITY_CHECK_REGISTRY = {
     "ssrf": SSRFCheck,
     "reputation": ReputationCheck,
+    "whitelist": WhitelistURLCheck,
+    "blacklist": BlacklistURLCheck,
 }
 
 # Factories rather than bare classes, since trackers have different constructor
@@ -25,7 +27,7 @@ TRACKER_FACTORIES = {
 
 # Comma-separated env vars let you toggle checks/trackers per environment
 # without a code change or redeploy of application logic.
-ACTIVE_CHECKS = os.getenv("ACTIVE_SECURITY_CHECKS", "ssrf,reputation").split(",")
+ACTIVE_CHECKS = os.getenv("ACTIVE_SECURITY_CHECKS", "ssrf,reputation,whitelist,blacklist").split(",")
 ACTIVE_TRACKERS = os.getenv("ACTIVE_TRACKERS", "db").split(",")
 
 # CORS origins allowed to make requests to this API. This is a security measure to prevent

@@ -65,10 +65,15 @@ export default function HomePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    const trimmedUrl = longUrl.trim();
+    let trimmedUrl = longUrl.trim();
     if (!trimmedUrl) {
       setError("Please enter a URL to shorten");
       return;
+    }
+    // Native type="url" validation silently blocks submission on missing
+    // schemes, so we accept freeform text and default to https:// ourselves.
+    if (!/^https?:\/\//i.test(trimmedUrl)) {
+      trimmedUrl = `https://${trimmedUrl}`;
     }
     setLoading(true);
     try {
@@ -178,10 +183,11 @@ export default function HomePage() {
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               <SgdsInput
-                type="url"
+                type="text"
                 required
                 label="Long URL"
                 placeholder="https://example.com/very/long/link"
+                hintText="You can leave off https:// — we'll add it for you"
                 value={longUrl}
                 onSgdsInput={(e) => setLongUrl((e.target as any).value)}
               >
@@ -220,7 +226,14 @@ export default function HomePage() {
                   <SgdsIcon slot="rightIcon" name="arrow-right" />
                 </SgdsButton>
               </div>
-              {error && <SgdsAlert variant="danger">{error}</SgdsAlert>}
+              {error && (
+                <SgdsAlert variant="danger" show dismissible onSgdsHide={() => setError(null)}>
+                  <span style={{ fontWeight: "var(--sgds-font-weight-semibold)" }}>
+                    Couldn't shorten this link
+                  </span>
+                  <div className="mt-1">{error}</div>
+                </SgdsAlert>
+              )}
             </form>
 
             {newLink && (
