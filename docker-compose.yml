@@ -10,6 +10,45 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U linkshield -d linkshield"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://linkshield:linkshield@db:5432/linkshield
+      FRONTEND_CORS_ORIGINS: http://localhost:3000
+      ACTIVE_SECURITY_CHECKS: ssrf,reputation,whitelist,blacklist
+      ACTIVE_TRACKERS: db
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # NEXT_PUBLIC_* vars are inlined into the client bundle at build
+        # time, so they must point at URLs the browser (not other
+        # containers) can reach — the host-published ports below.
+        NEXT_PUBLIC_API_BASE: http://localhost:8000
+        NEXT_PUBLIC_APP_BASE: http://localhost:3000
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
 
 volumes:
   pgdata:

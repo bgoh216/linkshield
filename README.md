@@ -15,17 +15,22 @@ linkshield/
       dependencies.py     FastAPI Depends() providers — the DI wiring
       config.py           registry of available checks/trackers + which are active
       checks/
-        ssrf_check.py       blocks private/internal IPs (cloud metadata, localhost, LAN)
-        reputation_check.py stub for Safe Browsing / VirusTotal
-        pipeline.py         runs a list of checks against a URL
+        ssrf_check.py         blocks private/internal IPs (cloud metadata, localhost, LAN)
+        reputation_check.py   stub for Safe Browsing / VirusTotal
+        whitelist_url_check.py denies any domain not on an allowlist (e.g. *.gov.sg)
+        blacklist_url_check.py blocks known-bad domains (e.g. *.badsite.com)
+        pipeline.py            runs a list of checks against a URL
       tracking/
         db_tracker.py        writes clicks to Postgres (always on)
         external_tracker.py  stub showing how to plug in an analytics API
+    tests/                pytest suite (checks, schemas, bot detection, /api/links)
     requirements.txt
+    Dockerfile
   frontend/        Next.js app (App Router, TS, Tailwind)
     app/page.tsx    form to create links + list view
     lib/api.ts      fetch helpers for backend
-  docker-compose.yml   Postgres for local dev
+    Dockerfile
+  docker-compose.yml   Postgres + backend + frontend, for a one-command full stack
 ```
 
 ## Database
@@ -48,7 +53,7 @@ async def create_link(payload: ..., pipeline: SecurityPipeline = Depends(get_sec
 
 `get_security_pipeline()` (in `dependencies.py`) builds the pipeline from
 whatever's listed in `config.py`'s `ACTIVE_CHECKS`, which reads from an env
-var (`ACTIVE_SECURITY_CHECKS=ssrf,reputation`). To add a new compliance
+var (`ACTIVE_SECURITY_CHECKS=ssrf,reputation,whitelist,blacklist`). To add a new compliance
 check later (say, a GDPR-region check or a copyright takedown check):
 
 1. Write a class with an async `check(url) -> CheckResult` method (see `checks/ssrf_check.py`)
@@ -62,12 +67,22 @@ environment.
 
 ## Run it
 
+### Option A: Docker Compose (everything, one command)
+```bash
+docker compose up -d --build
+```
+This builds and starts Postgres, the backend, and the frontend together —
+frontend at http://localhost:3000, backend/docs at http://localhost:8000/docs.
+Postgres data persists in the `pgdata` volume across restarts. Rebuild after
+dependency changes with `docker compose up -d --build`; tear down with
+`docker compose down` (add `-v` to also wipe the database volume).
+
+### Option B: run each piece natively (faster iteration/hot reload)
+
 **1. Start Postgres**
 ```bash
-docker compose up -d
+docker compose up -d db
 ```
-
-
 
 **2. Backend**
 ```bash
@@ -88,6 +103,12 @@ npm run dev
 ```
 App at http://localhost:3000
 
+**4. Backend tests**
+```bash
+cd backend
+pytest
+```
+
 ## Endpoints
 - `POST /api/links` — create a short link `{ long_url, custom_code? }`
 - `GET /api/links` — list all links with click counts
@@ -97,12 +118,14 @@ App at http://localhost:3000
 ## Security checks currently in place
 - Scheme allowlist (only http/https)
 - SSRF guard: resolves hostname and blocks private/loopback/link-local IP ranges (defends against links pointing at internal infra or cloud metadata endpoints)
+- Domain whitelist (`checks/whitelist_url_check.py`) and blacklist (`checks/blacklist_url_check.py`): `fnmatch`-based domain pattern lists, both on by default
 - Flag system: `is_flagged` links are blocked at redirect time
 - Click-time re-validation, not just creation-time (a link can go bad after it's made)
 - `ReputationCheck` in `checks/reputation_check.py` is a stub — wire in Google Safe Browsing or VirusTotal here for real threat-intel checks
 
 ## Ideas to extend for the assignment
 - Real reputation API call in `ReputationCheck.check()`
+- Swap the hardcoded whitelist/blacklist domain lists for a database-backed check
 - A GDPR/compliance-region check as a new `SecurityCheck` implementation
 - Rate limiting per IP/link on `/r/{short_code}`
 - Admin view to review/unflag reported links
